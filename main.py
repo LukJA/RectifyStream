@@ -1,11 +1,12 @@
 # RectifyStream
-# Dependecy azure-storage-blob
+# Dependecy azure-storage-blob , picamera
 
 # Rectify resource keys:
 # DefaultEndpointsProtocol=https;AccountName=rectify;AccountKey=a9be73PYVTFWPW9piDagZ0n2CeESLwXbajh7bPhM5nyfUFSPgGaqR1WEHg08Wl8pLk+TZGS54FkeQeXUzTuR7A==;EndpointSuffix=core.windows.net
 
 import os, uuid, time
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
+from picamera import PiCamera
 
 # Define a user ID for container storage 
 containerID = "conone"
@@ -17,7 +18,7 @@ connect_str = "DefaultEndpointsProtocol=https;AccountName=rectify;AccountKey=a9b
 blob_service_client = BlobServiceClient.from_connection_string(connect_str)
 
 # Create a unique name for the container
-container_name = "test_container"
+container_name = "container" + str(uuid.uuid4())
 
 # Create the container
 container_client = blob_service_client.create_container(container_name)
@@ -55,8 +56,12 @@ time.sleep(5)
 print("Deleting blob container...")
 container_client.delete_container()
 
-print("Deleting the local source and downloaded files...")
-os.remove(upload_file_path)
-os.remove(download_file_path)
+# Test the camera 
+camera = PiCamera()
+camera.resolution = (1024, 768)
+camera.start_preview()
+# warmup
+time.sleep(2)
+camera.capture("data/testimg.jpg")
 
 print("Done")
