@@ -34,7 +34,7 @@ try:
         time.sleep(2)
         # Generate a unique name
         file_name = "img" + str(uuid.uuid4()) + ".jpg"
-        img_name = "data/" + file_name
+        img_name = "/home/pi/data/" + file_name
         camera.capture(img_name)
         camera.stop_preview()
 

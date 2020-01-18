@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/home/pi/RectifyStream/main.py", line 38, in <module>
+    camera.capture(img_name)
+  File "/usr/lib/python3/dist-packages/picamera/camera.py", line 1418, in capture
+    encoder.start(output)
+  File "/usr/lib/python3/dist-packages/picamera/encoders.py", line 1126, in start
+    super(PiCookedOneImageEncoder, self).start(output)
+  File "/usr/lib/python3/dist-packages/picamera/encoders.py", line 375, in start
+    self._open_output(output)
+  File "/usr/lib/python3/dist-packages/picamera/encoders.py", line 331, in _open_output
+    self.outputs[key] = mo.open_stream(output)
+  File "/usr/lib/python3/dist-packages/picamera/mmalobj.py", line 344, in open_stream
+    stream = io.open(stream, 'wb' if output else 'rb', buffering)
+FileNotFoundError: [Errno 2] No such file or directory: './data/img16659e26-582a-4690-809d-7a61464d352d.jpg'
