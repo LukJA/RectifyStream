@@ -8,11 +8,14 @@ import os, uuid, time
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 from picamera import PiCamera
 
-# Define a user ID for container storage 
-containerID = "conone"
-# setup connection string
-connect_str = "DefaultEndpointsProtocol=https;AccountName=rectify;AccountKey=a9be73PYVTFWPW9piDagZ0n2CeESLwXbajh7bPhM5nyfUFSPgGaqR1WEHg08Wl8pLk+TZGS54FkeQeXUzTuR7A==;EndpointSuffix=core.windows.net"
 
+# configure camera
+camera = PiCamera()
+camera.resolution = (1024, 768)
+
+# setup connection string
+#connect_str = "DefaultEndpointsProtocol=https;AccountName=rectify;AccountKey=a9be73PYVTFWPW9piDagZ0n2CeESLwXbajh7bPhM5nyfUFSPgGaqR1WEHg08Wl8pLk+TZGS54FkeQeXUzTuR7A==;EndpointSuffix=core.windows.net"
+connect_str = "DefaultEndpointsProtocol=https;AccountName=rectify;AccountKey=gjfOU1J6UkImVEbsvzXDv+aOO7EODefXZUbsX4faXZ83yI4G8XleQxPR7MquxIvZmF86mhJApEmM+dCPjotJMw==;EndpointSuffix=core.windows.net"
 
 # Create the BlobServiceClient object which will be used to create a container client
 blob_service_client = BlobServiceClient.from_connection_string(connect_str)
@@ -23,45 +26,42 @@ container_name = "container" + str(uuid.uuid4())
 # Create the container
 container_client = blob_service_client.create_container(container_name)
 
+try:
+    while(True):
 
-# Create a file in local Documents directory to upload and download
-local_path = "./data"
-local_file_name = "quickstart" + str(uuid.uuid4()) + ".txt"
-upload_file_path = os.path.join(local_path, local_file_name)
+        # Generate a new image
+        camera.start_preview()
+        time.sleep(2)
+        # Generate a unique name
+        file_name = "img" + str(uuid.uuid4()) + ".jpg"
+        img_name = "data/" + file_name
+        camera.capture(img_name)
+        camera.stop_preview()
 
-# Write text to the file
-file = open(upload_file_path, 'w')
-file.write("Hello, World!")
-file.close()
+        # Create a blob client using the local file name as the name for the blob
+        blob_client = blob_service_client.get_blob_client(container=container_name, blob=file_name)
 
-# Create a blob client using the local file name as the name for the blob
-blob_client = blob_service_client.get_blob_client(container=container_name, blob=local_file_name)
+        print("\nUploading image to Azure Storage as blob:\n\t" + file_name)
 
-print("\nUploading to Azure Storage as blob:\n\t" + local_file_name)
+        # Upload the created file
+        with open(img_name, "rb") as data:
+            blob_client.upload_blob(data)
 
-# Upload the created file
-with open(upload_file_path, "rb") as data:
-    blob_client.upload_blob(data)
+        print("\nListing blobs...")
 
-print("\nListing blobs...")
+        # List the blobs in the container
+        blob_list = container_client.list_blobs()
+        for blob in blob_list:
+            print("\t" + blob.name)
 
-# List the blobs in the container
-blob_list = container_client.list_blobs()
-for blob in blob_list:
-    print("\t" + blob.name)
+        time.sleep(30)
 
-# Clean up
-time.sleep(5)
+except KeyboardInterrupt:
+    # Clean up
+    time.sleep(5)
 
-print("Deleting blob container...")
-container_client.delete_container()
+    print("Deleting blob container...")
+    container_client.delete_container()
 
-# Test the camera 
-camera = PiCamera()
-camera.resolution = (1024, 768)
-camera.start_preview()
-# warmup
-time.sleep(2)
-camera.capture("data/testimg.jpg")
 
-print("Done")
+print("Teardown Complete")
